@@ -1246,3 +1246,135 @@ button {
         padding: 55px 25px;
     }
 }
+
+/* -------------------------
+   13. FINAL POLISH
+   ------------------------- */
+
+/* Clear, consistent keyboard focus */
+
+a:focus-visible,
+button:focus-visible {
+    outline: 3px solid var(--warning);
+    outline-offset: 4px;
+}
+
+.button:focus-visible,
+.choice-button:focus-visible {
+    outline-offset: 4px;
+}
+
+
+/* Navigation: show which page is active */
+
+.main-nav a {
+    padding: 6px 0;
+    border-bottom: 2px solid transparent;
+}
+
+.main-nav a.active {
+    color: var(--accent-dark);
+    border-bottom-color: var(--accent);
+    font-weight: 700;
+}
+
+
+/* Give informational text consistent spacing */
+
+.intro-section > div:last-child p {
+    color: var(--text-soft);
+    font-size: 1.05rem;
+    line-height: 1.75;
+    margin-bottom: 20px;
+}
+
+.intro-section > div:last-child p:last-child {
+    margin-bottom: 0;
+}
+
+
+/* Improve the closing call-to-action sections */
+
+.final-cta > p:not(.eyebrow) {
+    max-width: 620px;
+    margin: 0 auto 28px;
+    color: #e0e4df;
+    font-size: 1rem;
+    line-height: 1.75;
+}
+
+
+/* More comfortable link and button interaction */
+
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.button,
+.choice-button,
+.experience-card {
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+    .main-nav a:hover {
+        color: var(--accent);
+    }
+}
+
+
+/* Respect visitors who prefer less animation */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+
+/* Clean up mobile typography and spacing */
+
+@media (max-width: 600px) {
+    .page-hero {
+        width: 92%;
+        padding: 60px 0 45px;
+    }
+
+    .page-hero h1 {
+        font-size: clamp(2.7rem, 12vw, 4rem);
+        overflow-wrap: break-word;
+    }
+
+    .intro-section {
+        padding-top: 45px;
+        margin-bottom: 75px;
+    }
+
+    .how-section {
+        padding: 45px 0;
+        margin-bottom: 75px;
+    }
+
+    .final-cta {
+        padding: 45px 22px;
+        overflow-wrap: break-word;
+    }
+
+    .journey-header {
+        padding: 35px 24px;
+    }
+
+    .hero h1 {
+        font-size: clamp(3rem, 12vw, 4rem);
+    }
+
+    .main-nav a {
+        font-size: 0.75rem;
+    }
+}
