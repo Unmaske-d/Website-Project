@@ -27,6 +27,19 @@ const circumstances = [
 ];
 
 // ==============================
+// TIME VARIATION
+// ==============================
+
+function varyTime(minutes) {
+    if (minutes <= 0) return minutes;
+
+    // Random variation between -2 and +2 minutes.
+    const variation = Math.floor(Math.random() * 5) - 2;
+
+    return Math.max(0, minutes + variation);
+}
+
+// ==============================
 // RNG
 // ==============================
 
