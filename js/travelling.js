@@ -141,7 +141,7 @@ function showCircumstance() {
     // Reset the journey for a fresh attempt.
     currentStep = 2;
     journeyTime = 0;
-    budget = 5;
+    budget = circumstance.id === "budget" ? 2 : 5;
     routeChoice = "";
 
     updateStatus();
@@ -181,7 +181,7 @@ function showCircumstance() {
 
 function makeChoice(timeAdded, moneyChange) {
 
-    journeyTime += timeAdded;
+    journeyTime += varyTime(timeAdded);
     budget += moneyChange;
 
     updateStatus();
@@ -707,8 +707,8 @@ if (currentStep === 5) {
                 <h2>The direct route isn't accessible.</h2>
 
                 <p>
-                    The route you chose has an obstacle you
-                    weren't able to anticipate.
+                    The route you chose has no elevators to the platform.
+                    Asking someone to help you up the stairs takes too long and you will miss your connection.
                 </p>
 
                 <button class="choice-button"
@@ -1037,7 +1037,7 @@ if (currentStep === 5) {
 // ==============================
 
 function finishJourney(timeAdded, moneyChange = 0) {
-    journeyTime += timeAdded;
+    journeyTime += varyTime(timeAdded);
     budget += moneyChange;
 
     if (!exploredCircumstances.includes(circumstance.id)) {
