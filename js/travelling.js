@@ -5,6 +5,9 @@ let circumstance = "";
 let routeChoice = "";
 let exploredCircumstances = [];
 
+const directJourneyTime = 22;
+const appointmentDeadline = 9 * 60 + 30; // 09:30
+
 const circumstances = [
     {
         id: "accessibility",
@@ -38,7 +41,16 @@ function varyTime(minutes) {
 
     return Math.max(0, minutes + variation);
 }
+function formatTime(totalMinutes) {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
 
+    return (
+        String(hours).padStart(2, "0") +
+        ":" +
+        String(minutes).padStart(2, "0")
+    );
+}
 // ==============================
 // RNG
 // ==============================
@@ -193,14 +205,12 @@ function showCircumstance() {
 // ==============================
 
 function makeChoice(timeAdded, moneyChange) {
-
     journeyTime += varyTime(timeAdded);
     budget += moneyChange;
 
-    updateStatus();
-
     currentStep++;
 
+    updateStatus();
     updateProgress();
 
     showNextStage();
@@ -214,15 +224,12 @@ function makeChoice(timeAdded, moneyChange) {
 function updateStatus() {
 
     const startHour = 8;
-    const startMinute = 30;
+    const startMinutes = 8 * 60 + 30;
 
-    const directTime = 22;
+    const directTime = currentStep >= 3 ? directJourneyTime : 0;
 
     const totalMinutes =
-        startHour * 60 +
-        startMinute +
-        directTime +
-        journeyTime;
+        startMinutes + directTime + journeyTime;
 
     const hours =
         Math.floor(totalMinutes / 60);
@@ -911,7 +918,7 @@ if (currentStep === 5) {
                 </button>
 
                 <button class="choice-button"
-                        onclick="finishJourney(3)">
+                        onclick="finishJourney(3, -1)">
 
                     <strong>Pay for the faster connection</strong>
 
@@ -1013,7 +1020,7 @@ if (currentStep === 5) {
                 </button>
 
                 <button class="choice-button"
-                        onclick="finishJourney(3, -1)">
+                        onclick="finishJourney(3)">
 
                     <strong>Try the direct route</strong>
 
@@ -1071,20 +1078,26 @@ function finishJourney(timeAdded, moneyChange = 0) {
         document.getElementById("journey-panel-content");
        
 
-    const directTime = 22;
+    const totalTime = directJourneyTime + journeyTime;
 
-    const totalTime =
-        directTime + journeyTime;
+    const departureTime = 8 * 60 + 30;
+    const arrivalTime = departureTime + totalTime;
+    
+    const isLate = arrivalTime > appointmentDeadline;
+    const minutesLate = arrivalTime - appointmentDeadline;
 
     panel.innerHTML = `
 
         <p class="eyebrow">07 — ARRIVAL</p>
 
-        <h2>You arrived.</h2>
+        <h2>${isLate ? "You're late." : "You arrived."}</h2>
 
         <p>
-            The destination was the same.
-            The journey wasn't.
+            ${
+                isLate
+                    ? `You arrived at ${formatTime(arrivalTime)}, ${minutesLate} minutes after your appointment began.`
+                    : `You arrived at ${formatTime(arrivalTime)}, before your 09:30 appointment.`
+            }
         </p>
 
         <div class="result-grid">
