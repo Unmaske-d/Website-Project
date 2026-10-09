@@ -1122,12 +1122,10 @@ function finishJourney(timeAdded, moneyChange = 0) {
 
         <div style="margin-top: 35px;">
 
-            <a href="explore.html"
-               class="button button-primary">
-
-                Explore another journey →
-
-            </a>
+            <button class="choice-button" onclick="startJourney()">
+                <strong>Choose another journey</strong>
+                <span>Try any circumstance again, or let the site choose.</span>
+            </button>
 
         </div>
 
