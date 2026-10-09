@@ -78,28 +78,99 @@ function chooseCircumstance() {
 // ==============================
 
 function startJourney() {
+    const panel = document.getElementById("journey-panel-content");
 
+    panel.innerHTML = `
+        <p class="eyebrow">YOUR JOURNEY — BEFORE YOU BEGIN</p>
+
+        <h2>One destination. Different circumstances.</h2>
+
+        <p>
+            You need to reach your destination. Your journey starts
+            at 08:30, and you have €5 available.
+        </p>
+
+        <p>
+            Along the way, you'll make decisions about your route.
+            Some may cost time or money; others may involve uncertainty
+            or finding an alternative.
+        </p>
+
+        <h3>Choose the circumstance you want to explore.</h3>
+
+        <button class="choice-button"
+                onclick="selectCircumstance('accessibility')">
+            <strong>An accessibility barrier</strong>
+            <span>Parts of your route may not be accessible.</span>
+        </button>
+
+        <button class="choice-button"
+                onclick="selectCircumstance('information')">
+            <strong>An information barrier</strong>
+            <span>Some route information is unclear or difficult to find.</span>
+        </button>
+
+        <button class="choice-button"
+                onclick="selectCircumstance('budget')">
+            <strong>A limited budget</strong>
+            <span>You need to keep your travel costs low.</span>
+        </button>
+
+        <button class="choice-button"
+                onclick="selectRandomCircumstance()">
+            <strong>Surprise me</strong>
+            <span>Let the site choose a circumstance for you.</span>
+        </button>
+    `;
+}
+
+function selectCircumstance(id) {
+    circumstance = circumstances.find(item => item.id === id);
+
+    if (!circumstance) return;
+
+    showCircumstance();
+}
+
+function selectRandomCircumstance() {
     chooseCircumstance();
+    showCircumstance();
+}
 
+function showCircumstance() {
+    // Reset the journey for a fresh attempt.
     currentStep = 2;
+    journeyTime = 0;
+    budget = 5;
+    routeChoice = "";
 
+    updateStatus();
     updateProgress();
 
-    document.getElementById("journey-panel-content").innerHTML = `
+    const panel = document.getElementById("journey-panel-content");
 
+    panel.innerHTML = `
         <p class="eyebrow">02 — YOUR CIRCUMSTANCE</p>
 
         <h2>${circumstance.name}</h2>
 
+        <p>${circumstance.description}</p>
+
         <p>
-            ${circumstance.description}
+            This scenario focuses on one possible barrier.
+            It cannot represent everyone's experiences, but it can
+            help you consider how circumstances affect everyday choices.
         </p>
 
         <button class="choice-button" onclick="makeChoice(0, 0)">
             <strong>Continue your journey</strong>
-            <span>See what this means for your route.</span>
+            <span>See how your circumstances affect your options.</span>
         </button>
 
+        <button class="choice-button" onclick="startJourney()">
+            <strong>Choose a different circumstance</strong>
+            <span>You can change your choice at any time before beginning.</span>
+        </button>
     `;
 }
 
@@ -132,9 +203,12 @@ function updateStatus() {
     const startHour = 8;
     const startMinute = 30;
 
+    const directTime = 22;
+
     const totalMinutes =
         startHour * 60 +
         startMinute +
+        directTime +
         journeyTime;
 
     const hours =
@@ -926,7 +1000,7 @@ if (currentStep === 5) {
                 </button>
 
                 <button class="choice-button"
-                        onclick="finishJourney(3)">
+                        onclick="finishJourney(3, -1)">
 
                     <strong>Try the direct route</strong>
 
@@ -962,19 +1036,18 @@ if (currentStep === 5) {
 // FINISH
 // ==============================
 
-function finishJourney(timeAdded) {
+function finishJourney(timeAdded, moneyChange = 0) {
+    journeyTime += timeAdded;
+    budget += moneyChange;
 
     if (!exploredCircumstances.includes(circumstance.id)) {
+        exploredCircumstances.push(circumstance.id);
 
-    exploredCircumstances.push(circumstance.id);
-
-    localStorage.setItem(
-        "experienceExchangeExplored",
-        JSON.stringify(exploredCircumstances)
-    );
-}
-
-    journeyTime += timeAdded;
+        localStorage.setItem(
+            "experienceExchangeExplored",
+            JSON.stringify(exploredCircumstances)
+        );
+    }
 
     currentStep = 7;
 
@@ -983,8 +1056,7 @@ function finishJourney(timeAdded) {
 
     const panel =
         document.getElementById("journey-panel-content");
-        document.getElementById("experience-text")
-        document.getElementById("choices")
+       
 
     const directTime = 22;
 
