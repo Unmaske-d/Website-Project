@@ -1089,9 +1089,8 @@ function finishJourney(timeAdded, moneyChange = 0) {
     panel.innerHTML = `
 
         <p class="eyebrow">07 — ARRIVAL</p>
-
         <h2>${isLate ? "You're late." : "You arrived."}</h2>
-
+        
         <p>
             ${
                 isLate
