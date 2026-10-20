@@ -1,4 +1,6 @@
 // Experience Exchange — travelling.js
+// Complete journey logic, including time variation, budget tracking,
+// progress updates, saved circumstances, and the 15% police encounter.
 
 let currentStep = 0;
 let journeyTime = 0;
@@ -35,6 +37,7 @@ const circumstances = [
 
 function varyTime(minutes) {
     if (minutes <= 0) return minutes;
+
     return Math.max(0, minutes + Math.floor(Math.random() * 5) - 2);
 }
 
@@ -81,6 +84,18 @@ function updateProgress() {
 
         fill.style.width = `${percentage}%`;
     }
+
+    document.querySelectorAll(".stage").forEach((stage, index) => {
+        stage.classList.remove("active", "completed");
+
+        if (index < currentStep - 1) {
+            stage.classList.add("completed");
+        }
+
+        if (index === currentStep - 1) {
+            stage.classList.add("active");
+        }
+    });
 }
 
 // ------------------------------
@@ -90,11 +105,11 @@ function updateProgress() {
 function loadExploredCircumstances() {
     try {
         const saved = localStorage.getItem("experienceExchangeExplored");
-        exploredCircumstances = saved ? JSON.parse(saved) : [];
+        const parsed = saved ? JSON.parse(saved) : [];
 
-        if (!Array.isArray(exploredCircumstances)) {
-            exploredCircumstances = [];
-        }
+        exploredCircumstances = Array.isArray(parsed)
+            ? parsed.filter(id => circumstances.some(item => item.id === id))
+            : [];
     } catch (error) {
         exploredCircumstances = [];
     }
@@ -118,8 +133,20 @@ function saveExploredCircumstance() {
 }
 
 // ------------------------------
-// START AND CIRCUMSTANCE SELECTION
+// CIRCUMSTANCE SELECTION
 // ------------------------------
+
+function chooseCircumstance() {
+    loadExploredCircumstances();
+
+    const unexplored = circumstances.filter(
+        item => !exploredCircumstances.includes(item.id)
+    );
+
+    const pool = unexplored.length > 0 ? unexplored : circumstances;
+
+    circumstance = pool[Math.floor(Math.random() * pool.length)];
+}
 
 function startJourney() {
     currentStep = 0;
@@ -132,6 +159,7 @@ function startJourney() {
     updateProgress();
 
     const panel = getPanel();
+
     if (!panel) {
         console.error("Missing element: #journey-panel-content");
         return;
@@ -139,68 +167,53 @@ function startJourney() {
 
     panel.innerHTML = `
         <p class="eyebrow">YOUR JOURNEY — BEFORE YOU BEGIN</p>
+
         <h2>One destination. Different circumstances.</h2>
 
         <p>
-            You need to reach your destination. Your journey starts at 08:30.
-            You have €5 available, or €2 in the limited-budget scenario.
+            You need to reach your destination. Your journey starts at 08:30,
+            and you have €5 available (or €2 in the limited-budget scenario).
         </p>
 
         <p>
-            Your decisions may affect how much time and money you have left.
+            Along the way, you'll make decisions about your route.
+            Some may cost time or money; others involve uncertainty or finding an alternative.
         </p>
 
-        <h3>Choose a circumstance to explore.</h3>
+        <h3>Choose the circumstance you want to explore.</h3>
 
-        <button class="choice-button"
-                onclick="selectCircumstance('accessibility')">
+        <button class="choice-button" onclick="selectCircumstance('accessibility')">
             <strong>An accessibility barrier</strong>
             <span>Parts of your route may not be accessible.</span>
         </button>
 
-        <button class="choice-button"
-                onclick="selectCircumstance('information')">
+        <button class="choice-button" onclick="selectCircumstance('information')">
             <strong>An information barrier</strong>
             <span>Some route information is unclear or difficult to find.</span>
         </button>
 
-        <button class="choice-button"
-                onclick="selectCircumstance('budget')">
+        <button class="choice-button" onclick="selectCircumstance('budget')">
             <strong>A limited budget</strong>
             <span>You need to keep your travel costs low.</span>
         </button>
 
-        <button class="choice-button"
-                onclick="selectRandomCircumstance()">
+        <button class="choice-button" onclick="selectRandomCircumstance()">
             <strong>Surprise me</strong>
-            <span>Explore a circumstance you haven't tried yet.</span>
+            <span>Let the site choose a circumstance you haven't explored yet.</span>
         </button>
     `;
 }
 
 function selectCircumstance(id) {
-    const selected = circumstances.find(item => item.id === id);
+    circumstance = circumstances.find(item => item.id === id) || null;
 
-    if (!selected) {
-        console.error("Unknown circumstance:", id);
-        return;
+    if (circumstance) {
+        showCircumstance();
     }
-
-    circumstance = selected;
-    showCircumstance();
 }
 
 function selectRandomCircumstance() {
-    loadExploredCircumstances();
-
-    const unexplored = circumstances.filter(
-        item => !exploredCircumstances.includes(item.id)
-    );
-
-    const pool = unexplored.length > 0 ? unexplored : circumstances;
-
-    circumstance = pool[Math.floor(Math.random() * pool.length)];
-
+    chooseCircumstance();
     showCircumstance();
 }
 
@@ -216,17 +229,23 @@ function showCircumstance() {
     updateProgress();
 
     const panel = getPanel();
-    if (!panel) return;
+
+    if (!panel) {
+        console.error("Missing element: #journey-panel-content");
+        return;
+    }
 
     panel.innerHTML = `
         <p class="eyebrow">02 — YOUR CIRCUMSTANCE</p>
+
         <h2>${circumstance.name}</h2>
+
         <p>${circumstance.description}</p>
 
         <p>
             This scenario focuses on one possible barrier. It cannot represent
-            everyone's experiences, but it can help you consider how
-            circumstances affect everyday choices.
+            everyone's experiences, but it can help you consider how circumstances
+            affect everyday choices.
         </p>
 
         <button class="choice-button" onclick="makeChoice(0, 0)">
@@ -236,7 +255,7 @@ function showCircumstance() {
 
         <button class="choice-button" onclick="startJourney()">
             <strong>Choose a different circumstance</strong>
-            <span>Return to the selection screen.</span>
+            <span>Return to the circumstance selection.</span>
         </button>
     `;
 }
@@ -266,13 +285,13 @@ function showPoliceCaught() {
 
     panel.innerHTML = `
         <p class="eyebrow">07 — AN UNEXPECTED ENDING</p>
+
         <h2>You've been stopped.</h2>
 
         <p>
             Your balance dropped below €0, and you were caught travelling
             without enough money for the fare. This outcome is random:
-            there was a 15% chance after a choice made while your balance
-            was negative.
+            it was a 15% chance after a choice made while your balance was negative.
         </p>
 
         <div class="result-message">
@@ -280,8 +299,7 @@ function showPoliceCaught() {
 
             <p>
                 A limited budget can affect more than the route you choose.
-                It can add uncertainty and consequences to an already
-                difficult journey.
+                It can add uncertainty and consequences to an already difficult journey.
             </p>
 
             <p class="exploration-count">
@@ -290,4 +308,188 @@ function showPoliceCaught() {
             </p>
         </div>
 
-        <button class
+        <div style="margin-top: 35px;">
+            <button class="choice-button" onclick="startJourney()">
+                <strong>Choose another journey</strong>
+                <span>Try another circumstance or let the site choose.</span>
+            </button>
+        </div>
+    `;
+}
+
+// ------------------------------
+// CHOICE HANDLING
+// ------------------------------
+
+function makeChoice(timeAdded, moneyChange = 0) {
+    journeyTime += varyTime(timeAdded);
+    budget += moneyChange;
+
+    updateStatus();
+
+    // Don't render another stage if the unexpected ending appears.
+    if (checkPoliceEncounter()) return;
+
+    currentStep++;
+
+    updateStatus();
+    updateProgress();
+
+    showNextStage();
+}
+
+// ------------------------------
+// JOURNEY STAGES
+// ------------------------------
+
+function showNextStage() {
+    const panel = getPanel();
+
+    if (!panel || !circumstance) {
+        console.error("Cannot show the next stage: panel or circumstance is missing.");
+        return;
+    }
+
+    // STAGE 3 — PLAN
+
+    if (currentStep === 3) {
+        if (circumstance.id === "budget") {
+            panel.innerHTML = `
+                <p class="eyebrow">03 — YOUR PLAN</p>
+                <h2>How will you get there?</h2>
+
+                <p>
+                    Your quickest route isn't necessarily the easiest choice
+                    when money is limited.
+                </p>
+
+                <button class="choice-button" onclick="routeChoice='cheap'; makeChoice(8, 0)">
+                    <strong>Take the cheaper route</strong>
+                    <span>Save money, but spend more time. +8 min · €0</span>
+                </button>
+
+                <button class="choice-button" onclick="routeChoice='fast'; makeChoice(3, -2)">
+                    <strong>Take the faster connection</strong>
+                    <span>Arrive sooner, but spend €2. +3 min · −€2</span>
+                </button>
+
+                <button class="choice-button" onclick="routeChoice='walk'; makeChoice(12, 0)">
+                    <strong>Walk part of the way</strong>
+                    <span>Avoid paying for another connection. +12 min · €0</span>
+                </button>
+            `;
+        } else if (circumstance.id === "information") {
+            panel.innerHTML = `
+                <p class="eyebrow">03 — YOUR PLAN</p>
+                <h2>How will you find your route?</h2>
+
+                <p>
+                    The route information available to you isn't completely clear.
+                </p>
+
+                <button class="choice-button" onclick="routeChoice='careful'; makeChoice(8, 0)">
+                    <strong>Work it out yourself</strong>
+                    <span>Compare the information. +8 min · €0</span>
+                </button>
+
+                <button class="choice-button" onclick="routeChoice='help'; makeChoice(5, 0)">
+                    <strong>Ask someone for help</strong>
+                    <span>Find someone who can explain the route. +5 min · €0</span>
+                </button>
+
+                <button class="choice-button" onclick="routeChoice='uncertain'; makeChoice(3, 0)">
+                    <strong>Follow the first route you find</strong>
+                    <span>It looks quick, but you're not sure. +3 min · €0</span>
+                </button>
+            `;
+        } else {
+            panel.innerHTML = `
+                <p class="eyebrow">03 — YOUR PLAN</p>
+                <h2>How will you get to the station?</h2>
+
+                <p>The most direct route isn't fully accessible.</p>
+
+                <button class="choice-button" onclick="routeChoice='accessible'; makeChoice(8, 0)">
+                    <strong>Find an accessible route</strong>
+                    <span>Take a longer route you can use. +8 min · €0</span>
+                </button>
+
+                <button class="choice-button" onclick="routeChoice='assistance'; makeChoice(5, 0)">
+                    <strong>Ask for assistance</strong>
+                    <span>See whether another route is available. +5 min · €0</span>
+                </button>
+
+                <button class="choice-button" onclick="routeChoice='direct'; makeChoice(3, 0)">
+                    <strong>Try the direct route</strong>
+                    <span>It's faster, but accessibility is uncertain. +3 min · €0</span>
+                </button>
+            `;
+        }
+
+        return;
+    }
+
+    // STAGE 4 — ROUTE
+
+    if (currentStep === 4) {
+        if (circumstance.id === "budget") {
+            panel.innerHTML = `
+                <p class="eyebrow">04 — YOUR ROUTE</p>
+                <h2>The route changes.</h2>
+
+                <p>
+                    Your planned connection isn't available.
+                    The alternatives have different costs.
+                </p>
+
+                <button class="choice-button" onclick="makeChoice(8, 0)">
+                    <strong>Take the free alternative</strong>
+                    <span>Longer, but costs nothing. +8 min · €0</span>
+                </button>
+
+                <button class="choice-button" onclick="makeChoice(5, -1)">
+                    <strong>Pay for another connection</strong>
+                    <span>Save some time, but spend €1. +5 min · −€1</span>
+                </button>
+
+                <button class="choice-button" onclick="makeChoice(10, 0)">
+                    <strong>Wait for your original route</strong>
+                    <span>Don't spend anything, but lose time. +10 min · €0</span>
+                </button>
+            `;
+        } else if (circumstance.id === "information") {
+            panel.innerHTML = `
+                <p class="eyebrow">04 — YOUR ROUTE</p>
+                <h2>The route changes.</h2>
+
+                <p>
+                    The information about your connection doesn't match
+                    what you expected.
+                </p>
+
+                <button class="choice-button" onclick="makeChoice(8, 0)">
+                    <strong>Check the information again</strong>
+                    <span>Make sure you're on the right route. +8 min · €0</span>
+                </button>
+
+                <button class="choice-button" onclick="makeChoice(5, 0)">
+                    <strong>Ask someone</strong>
+                    <span>Get help finding the correct connection. +5 min · €0</span>
+                </button>
+
+                <button class="choice-button" onclick="makeChoice(3, 0)">
+                    <strong>Trust the information you have</strong>
+                    <span>Keep moving despite the uncertainty. +3 min · €0</span>
+                </button>
+            `;
+        } else {
+            panel.innerHTML = `
+                <p class="eyebrow">04 — YOUR ROUTE</p>
+                <h2>The route changes.</h2>
+
+                <p>
+                    Your planned route isn't working as expected.
+                    The alternatives aren't equally accessible.
+                </p>
+
+                <button class="choice
