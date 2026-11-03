@@ -285,17 +285,17 @@ function showPoliceCaught() {
         <h2>You've been stopped.</h2>
 
         <p>
-            Your balance dropped below €0, and you were caught travelling
-            without enough money for the fare. This outcome is random:
-            it was a 15% chance after a choice made while your balance was negative.
+            We allowed you to have a negative budget because we expected you to not abuse it.
+            We even reduced the chances of you getting caught by 15%!
+            Please don't try to not break laws next time, regardless of if you have money or not.
         </p>
 
         <div class="result-message">
             <h2>Same destination. Different journey.</h2>
 
             <p>
-                A limited budget can affect more than the route you choose.
-                It can add uncertainty and consequences to an already difficult journey.
+                A limited budget can add uncertainty to life, just like gambling.
+                Or maybe you have a limited budget due to gambling problems.
             </p>
 
             <p class="exploration-count">
